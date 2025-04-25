@@ -2,7 +2,7 @@
 longevity,"1 = annual/biennial,  2 = perennial",lump biennials into annuals,
 type,"1 = graminoid, 2 = forb, 3 = shrub, 4 = tree",,
 nfix,"1= n fixing, 2 = not n fixing",,
-resprouting,"1 = resprouting, 2 = non-resprouting",,
+resprouting,"1 = resprouting, 0 = non resprouting",,
 dispersal,"1 = wind dispersed, 2 = non-wind dispersed",ian and I were thinking wind dispersed is the most important dispersal type… we can talk aboiut this/ get more granular if necessary?,seeds with adaptations (such as plumose pappus bristles) permitting seeds to be airborne are wind-dispersed (Kirkman et al 2004)
 photosynthesis,"1 = c3,  2 = c4",,
 seedmass,seed mass of 100 seeds in grams,,
