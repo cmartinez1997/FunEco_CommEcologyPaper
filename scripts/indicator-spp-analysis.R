@@ -10,6 +10,7 @@
 #install.packages("tidyverse")
 library(indicspecies)
 library(tidyverse)
+library(vegan)
 
 # analysis ----------------------------------------------------------------
 matrix <- read.csv("data/CommunityMatrix.csv")
@@ -57,13 +58,31 @@ ggplot(ind_cov_means, aes(x = severity, y = cov*100))+
 long_matrix <- matrix |> 
   pivot_longer(cols = 3:ncol(matrix), 
                names_to = "species", 
-               values_to = "presence")
+               values_to = "presence") %>% 
+  mutate(pres = case_when(presence == 0 ~ "n",
+                          presence > 0 ~ "y"))
+
+ind_data <- long_matrix |> 
+  filter(species %in% ind_spp)
+
+# number of plots:
+# U 20
+# L 18
+# H 19
+
+
+ind_sev_n <- ind_data %>% 
+  group_by(species, Severity) %>% 
+  filter(pres == "y") %>% 
+  summarise(n_pres = n())
+
+
+
 
 ind_spp <- c("VETH", "LOWR", "CEFE", "LIDA", "FEAR",
              "PSMA", "ELEL", "MUVI", "PIPR")
 
-ind_data <- long_matrix |> 
-  filter(species %in% ind_spp)
+
 
 ggplot(ind_data, aes(x = Severity, y = presence, fill = Severity)) +
   stat_summary(fun = mean, geom = "bar", position = "dodge") +
