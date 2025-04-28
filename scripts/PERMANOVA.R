@@ -265,7 +265,7 @@ tax_ellipses <- ordiellipse(tax_nmds,
                             lwd = 2,
                             label = FALSE)
 # legend
-legend("bottomleft", legend=names(severity_colors_centroids), 
+legend("topleft", legend=names(severity_colors_centroids), 
        col=severity_colors_centroids, pch=severity_symbols)
 
 # add envfit arrows
@@ -275,3 +275,4 @@ plot(envfit_tax, p.max = 1, col = "black",
 
 # save
 dev.off()
+
