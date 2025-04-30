@@ -43,6 +43,8 @@ ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Functional type")+
   scale_fill_manual(values = wes_palette("Cavalcanti1", 4))
+ggsave("outputs/functional_group_cover.png", last_plot(),
+       width = 10, height = 6, units = "in")
 
 # Nativity:
 group_cover2b <- group_cover %>% 
@@ -71,4 +73,6 @@ ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Nativity")+
   scale_fill_manual(values = c("#ae94a3", "#4d795f"))
+ggsave("outputs/nativity_cover.png", last_plot(),
+       width = 10, height = 6, units = "in")
 
