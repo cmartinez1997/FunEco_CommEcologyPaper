@@ -48,7 +48,8 @@ stressplot(tax_nmds)
 # PERMANOVA and post-hoc pairwise PERMANOVA
 perm_tax <- adonis2(vegdist(comm, method = "bray") ~ data$Severity, permutations = 9999)
 pair_tax <- pairwise.adonis(vegdist(comm, method="bray"), data$Severity, perm=9999)
-
+perm_tax
+pair_tax
 
 # Test of beta dispersion and post-hoc pairwise test of beta dispersion
 anova(betadisper(vegdist(comm, method="bray"), data$Severity, type="centroid"))
@@ -211,10 +212,11 @@ dev.off()
 
 ###############################################################################
 # taxonomic nmds with ellipses AND arrows so help me god
-png("outputs/tax_nmds.png", width = 7.5, height = 5, units = "in", res = 300)
+png("outputs/tax_nmds.png", width = 8.5, height = 6, units = "in", res = 300)
 
 tax_scores$severity <- factor(tax_scores$severity, levels = c("Unburned", "Low", "High"))
 envfit_tax <- envfit(tax_nmds, cwm, perm=999)
+envfit_tax
 
 # plot range to try and stretch points out
 x_range <- range(c(tax_scores$NMDS1, tax_centroids$NMDS1, envfit_tax$vectors$arrows[,1]))
@@ -223,7 +225,8 @@ y_range <- range(c(tax_scores$NMDS2, tax_centroids$NMDS2, envfit_tax$vectors$arr
 buffer_x <- diff(x_range) * 0.3
 buffer_y <- diff(y_range) * 0.3
 
-par(pin = c(5.5, 3))
+par(pin = c(5.5, 3), cex = 1.5)
+par(mar = c(4, 4, 1, 1))
 
 # plot
 plot(tax_nmds, display="sites", type="n",
