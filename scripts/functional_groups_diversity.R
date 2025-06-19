@@ -36,17 +36,31 @@ rel_fun_cover$severity <- fun_cover$Severity
 cover_df <- rel_fun_cover %>% 
   pivot_longer(cols = Forb:Tree, names_to = "group") %>% 
   group_by(severity, group) %>% 
-  summarise(cov = mean(value))
+  summarise(cov = mean(value), cov_sd = sd(value))
+
 cover_df$severity <- factor(cover_df$severity, c("U", "L", "H"))
   
- a <- ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
+ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   theme_light(base_size = 18)+
   geom_bar(stat = "identity", color = "black")+
+  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Functional type")+
-  scale_fill_manual(values = wes_palette("Cavalcanti1", 4))
-ggsave("outputs/functional_group_cover.png", last_plot(),
-       width = 8, height = 10, units = "in")
+  scale_fill_manual(values = wes_palette("Cavalcanti1", 4))+
+  facet_wrap(~group)+
+  theme(strip.background = element_rect(color = "black", fill = "white"))+
+  theme(strip.text = element_text(colour = 'black'))+
+  theme(legend.position = "none")
+ggsave("outputs/functional_group_cover_facet.png", last_plot(),
+       width = 8, height = 8, units = "in")
+
+# functional group stats:
+
+TukeyHSD(aov(Forb ~ severity, data = rel_fun_cover)) # forbs
+TukeyHSD(aov(Shrub ~ severity, data = rel_fun_cover)) # shrubs
+TukeyHSD(aov(Graminoid ~ severity, data = rel_fun_cover)) # grammies
+TukeyHSD(aov(Tree ~ severity, data = rel_fun_cover)) # trees
+
 
 # Nativity:
 group_cover2b <- group_cover %>% 
@@ -66,19 +80,29 @@ rel_nat_cover$severity <- nat_cover$Severity
 type_df <- rel_nat_cover %>% 
   pivot_longer(cols = Exotic:Native, names_to = "group") %>% 
   group_by(severity, group) %>% 
-  summarise(cov = mean(value))
+  summarise(cov = mean(value), cov_sd = sd(value))
 type_df$severity <- factor(type_df$severity, c("U", "L", "H"))
 
-b <- ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
+ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   theme_light(base_size = 18)+
   geom_bar(stat = "identity", color = "black")+
+  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Nativity")+
-  scale_fill_manual(values = c("#ae94a3", "#4d795f"))
-ggsave("outputs/nativity_cover.png", last_plot(),
-       width = 8, height = 10, units = "in")
+  scale_fill_manual(values = c("#ae94a3", "#4d795f"))+
+  facet_wrap(~group)+
+  theme(strip.background = element_rect(color = "black", fill = "white"))+
+  theme(strip.text = element_text(colour = 'black'))+
+  theme(legend.position = "none")
+ggsave("outputs/nativity_cover_facet.png", last_plot(),
+       width = 8, height = 4, units = "in")
 
-cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
-cow
-ggsave("outputs/cover_plot.png", last_plot(),
-       width = 8.5, height = 6, units = "in", dpi = 300)
+# stats:
+
+TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
+TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+
+# cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
+# cow
+# ggsave("outputs/cover_plot.png", last_plot(),
+#        width = 8.5, height = 6, units = "in", dpi = 300)
