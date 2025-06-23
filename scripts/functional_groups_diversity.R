@@ -43,7 +43,11 @@ cover_df$severity <- factor(cover_df$severity, c("U", "L", "H"))
 ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   theme_light(base_size = 18)+
   geom_bar(stat = "identity", color = "black")+
-  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100))+
+  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100),
+                width = 0.1)+
+  scale_y_continuous(breaks = c(25, 50, 75, 100),
+                   labels = c("25", "50", "75", "100"),
+                   limits = c(0, 110))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Functional type")+
   scale_fill_manual(values = wes_palette("Cavalcanti1", 4))+
@@ -51,6 +55,7 @@ ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))+
   theme(legend.position = "none")
+
 ggsave("outputs/functional_group_cover_facet.png", last_plot(),
        width = 8, height = 8, units = "in")
 
@@ -86,7 +91,10 @@ type_df$severity <- factor(type_df$severity, c("U", "L", "H"))
 ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   theme_light(base_size = 18)+
   geom_bar(stat = "identity", color = "black")+
-  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100))+
+  geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100), width = 0.1)+
+  scale_y_continuous(breaks = c(25, 50, 75, 100),
+                     labels = c("25", "50", "75", "100"),
+                     limits = c(0, 110))+
   labs(x = "Burn severity", y = "Relative Cover (%)",
        fill = "Nativity")+
   scale_fill_manual(values = c("#ae94a3", "#4d795f"))+
