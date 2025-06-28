@@ -18,6 +18,51 @@ group_cover <- data %>%
          nativity = case_when(spp %in% c("VETH", "LIDA", "SATR") ~ "Exotic",
                               .default = "Native"))
 
+# Stats:
+
+# PermANOVA
+
+data <- read_csv("data/CommunityMatrix.csv")
+
+comm <- data %>%
+  column_to_rownames(var = "Plot") %>% 
+  select(ARLU:VETH) %>%
+  wisconsin()
+
+traits <- read_csv("data/TraitTable.csv")%>%
+  filter(spp %in% colnames(data)) %>%
+  mutate(gram = case_when(spp %in% c("CARO", "ELEL", "FEAR",
+                                     "MUMO", "MUVI", "PIPR", 
+                                     "SCSC") ~ 2, .default = 1),
+         shrub = case_when(spp == "CEFE" ~ 2, .default = 1),
+         tree = case_when(spp == "QUGA" ~ 2, .default = 1),
+         forb = case_when(!(spp %in% c("CARO", "ELEL", "FEAR",
+                            "MUMO", "MUVI", "PIPR", 
+                            "SCSC", "CEFE", "QUGA")) ~ 2, .default = 1),
+         exotic = case_when(spp %in% c("VETH", "LIDA", "SATR") ~ 2,
+                              .default = 1)) %>% 
+  select(spp, gram, shrub, tree, forb, exotic) %>%
+  column_to_rownames(var="spp")
+
+# we need CWMs of these fxnl types
+comm <- data %>%
+  column_to_rownames(var = "Plot") %>% 
+  select(ARLU:VETH) %>%
+  wisconsin()
+
+cwm <- dbFD(traits, comm)$CWM
+# str(data)
+
+
+perm_groups <- adonis2(vegdist(cwm, method="euclidean") ~ data$Severity, permutations=9999)
+pair_groups <- pairwise.adonis(vegdist(cwm, method="euclidean"), data$Severity, perm=9999)
+
+
+
+# Pairwise comparisons? still appropriate?
+TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
+TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+
 # Functional groups:
 group_cover2a <- group_cover %>% 
   group_by(Severity, Plot, group) %>% 
@@ -104,11 +149,6 @@ ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   theme(legend.position = "none")
 ggsave("outputs/nativity_cover_facet.png", last_plot(),
        width = 8, height = 4, units = "in")
-
-# stats:
-
-TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
-TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
 
 # cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
 # cow
