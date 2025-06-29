@@ -3,31 +3,16 @@ library(vegan)
 library(FD)
 library(wesanderson)
 library(cowplot)
+library(pairwiseAdonis)
 
 
 data <- read_csv("data/CommunityMatrix.csv")
-
-group_cover <- data %>% 
-  pivot_longer(cols = ARLU:VETH, names_to = "spp") %>% 
-  mutate(group = case_when(spp %in% c("CARO", "ELEL", "FEAR",
-                                      "MUMO", "MUVI", "PIPR", 
-                                      "SCSC") ~ "Graminoid",
-                           spp == "CEFE" ~ "Shrub",
-                           spp == "QUGA" ~ "Tree",
-                           .default = "Forb"),
-         nativity = case_when(spp %in% c("VETH", "LIDA", "SATR") ~ "Exotic",
-                              .default = "Native"))
-
-# Stats:
-
-# PermANOVA
-
-data <- read_csv("data/CommunityMatrix.csv")
-
 comm <- data %>%
   column_to_rownames(var = "Plot") %>% 
   select(ARLU:VETH) %>%
   wisconsin()
+
+# Stats: PermANOVA
 
 traits <- read_csv("data/TraitTable.csv")%>%
   filter(spp %in% colnames(data)) %>%
@@ -40,28 +25,41 @@ traits <- read_csv("data/TraitTable.csv")%>%
                             "MUMO", "MUVI", "PIPR", 
                             "SCSC", "CEFE", "QUGA")) ~ 2, .default = 1),
          exotic = case_when(spp %in% c("VETH", "LIDA", "SATR") ~ 2,
-                              .default = 1)) %>% 
-  select(spp, gram, shrub, tree, forb, exotic) %>%
+                              .default = 1))
+
+traits_exo <- traits %>% 
+  select(spp, exotic) %>% 
   column_to_rownames(var="spp")
 
-# we need CWMs of these fxnl types
-comm <- data %>%
-  column_to_rownames(var = "Plot") %>% 
-  select(ARLU:VETH) %>%
-  wisconsin()
+traits_type <- traits %>% 
+  select(spp, gram, shrub, tree, forb) %>% 
+  column_to_rownames(var="spp")
 
-cwm <- dbFD(traits, comm)$CWM
-# str(data)
+cwm_exo <- dbFD(traits_exo, comm)$CWM
+cwm_type <- dbFD(traits_type, comm)$CWM
 
 
-perm_groups <- adonis2(vegdist(cwm, method="euclidean") ~ data$Severity, permutations=9999)
-pair_groups <- pairwise.adonis(vegdist(cwm, method="euclidean"), data$Severity, perm=9999)
+perm_exo <- adonis2(vegdist(cwm_exo, method="euclidean") ~ data$Severity, permutations=9999)
+pair_exo <- pairwise.adonis(vegdist(cwm_exo, method="euclidean"), data$Severity, perm=9999)
+perm_exo
+pair_exo
 
+perm_type <- adonis2(vegdist(cwm_type, method="euclidean") ~ data$Severity, permutations=9999)
+pair_type <- pairwise.adonis(vegdist(cwm_type, method="euclidean"), data$Severity, perm=9999)
+perm_type
+pair_type
 
-
-# Pairwise comparisons? still appropriate?
-TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
-TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+# Figures:
+group_cover <- data %>% 
+  pivot_longer(cols = ARLU:VETH, names_to = "spp") %>% 
+  mutate(group = case_when(spp %in% c("CARO", "ELEL", "FEAR",
+                                      "MUMO", "MUVI", "PIPR", 
+                                      "SCSC") ~ "Graminoid",
+                           spp == "CEFE" ~ "Shrub",
+                           spp == "QUGA" ~ "Tree",
+                           .default = "Forb"),
+         nativity = case_when(spp %in% c("VETH", "LIDA", "SATR") ~ "Exotic",
+                              .default = "Native"))
 
 # Functional groups:
 group_cover2a <- group_cover %>% 
@@ -101,8 +99,8 @@ ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   theme(strip.text = element_text(colour = 'black'))+
   theme(legend.position = "none")
 
-ggsave("outputs/functional_group_cover_facet.png", last_plot(),
-       width = 8, height = 8, units = "in")
+# ggsave("outputs/functional_group_cover_facet.png", last_plot(),
+#        width = 8, height = 8, units = "in")
 
 # functional group stats:
 
@@ -147,8 +145,11 @@ ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))+
   theme(legend.position = "none")
-ggsave("outputs/nativity_cover_facet.png", last_plot(),
-       width = 8, height = 4, units = "in")
+# ggsave("outputs/nativity_cover_facet.png", last_plot(),
+#        width = 8, height = 4, units = "in")
+
+TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
+TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
 
 # cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
 # cow
