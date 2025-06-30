@@ -44,10 +44,19 @@ pair_exo <- pairwise.adonis(vegdist(cwm_exo, method="euclidean"), data$Severity,
 perm_exo
 pair_exo
 
+# Test of beta dispersion and post-hoc pairwise test of beta dispersion
+anova(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
+TukeyHSD(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
+
+
 perm_type <- adonis2(vegdist(cwm_type, method="euclidean") ~ data$Severity, permutations=9999)
 pair_type <- pairwise.adonis(vegdist(cwm_type, method="euclidean"), data$Severity, perm=9999)
 perm_type
 pair_type
+
+# Test of beta dispersion and post-hoc pairwise test of beta dispersion
+anova(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
+TukeyHSD(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
 
 # Figures:
 group_cover <- data %>% 
