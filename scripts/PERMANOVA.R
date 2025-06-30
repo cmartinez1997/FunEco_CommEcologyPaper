@@ -9,6 +9,9 @@ library(ggordiplots)
 library(sjPlot)
 library(pagedown)
 
+
+
+
 ################################################################################
 # Ok so a little bit of a code garbage heap...                                 #
 # NMDS plots with trait vectors at the bottom                                  #  
@@ -212,7 +215,7 @@ dev.off()
 
 ###############################################################################
 # taxonomic nmds with ellipses AND arrows so help me god
-png("outputs/tax_nmds.png", width = 8.5, height = 6, units = "in", res = 300)
+pdf("outputs/tax_nmds.pdf", width = 8.5, height = 6)
 
 tax_scores$severity <- factor(tax_scores$severity, levels = c("Unburned", "Low", "High"))
 envfit_tax <- envfit(tax_nmds, cwm, perm=999)
@@ -274,7 +277,8 @@ legend("topleft", legend=names(severity_colors_centroids),
 # add envfit arrows
 plot(envfit_tax, p.max = 1, col = "black",
      xlim = c(min(x_range) - buffer_x, max(x_range) + buffer_x), 
-     ylim = c(min(y_range) - buffer_y, max(y_range) + buffer_y))
+     ylim = c(min(y_range) - buffer_y, max(y_range) + buffer_y),
+     labels = NA)
 
 # save
 dev.off()
