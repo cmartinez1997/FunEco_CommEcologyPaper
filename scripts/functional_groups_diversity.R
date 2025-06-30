@@ -38,7 +38,7 @@ traits_type <- traits %>%
 cwm_exo <- dbFD(traits_exo, comm)$CWM
 cwm_type <- dbFD(traits_type, comm)$CWM
 
-
+# exotics permanova
 perm_exo <- adonis2(vegdist(cwm_exo, method="euclidean") ~ data$Severity, permutations=9999)
 pair_exo <- pairwise.adonis(vegdist(cwm_exo, method="euclidean"), data$Severity, perm=9999)
 perm_exo
@@ -48,7 +48,7 @@ pair_exo
 anova(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
 TukeyHSD(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
 
-
+# functional group permanova
 perm_type <- adonis2(vegdist(cwm_type, method="euclidean") ~ data$Severity, permutations=9999)
 pair_type <- pairwise.adonis(vegdist(cwm_type, method="euclidean"), data$Severity, perm=9999)
 perm_type
