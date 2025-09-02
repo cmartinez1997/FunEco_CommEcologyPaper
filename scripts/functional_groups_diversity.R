@@ -108,8 +108,8 @@ ggplot(cover_df, aes(x = severity, y = cov*100, fill = group))+
   theme(strip.text = element_text(colour = 'black'))+
   theme(legend.position = "none")
 
-# ggsave("outputs/functional_group_cover_facet.png", last_plot(),
-#        width = 8, height = 8, units = "in")
+ggsave("outputs/functional_group_cover_facet.png", last_plot(),
+        width = 8, height = 8, units = "in", dpi = 300)
 
 # functional group stats:
 
@@ -154,8 +154,8 @@ ggplot(type_df, aes(x = severity, y = cov*100, fill = group))+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))+
   theme(legend.position = "none")
-# ggsave("outputs/nativity_cover_facet.png", last_plot(),
-#        width = 8, height = 4, units = "in")
+ ggsave("outputs/nativity_cover_facet.png", last_plot(),
+        width = 8, height = 4, units = "in", dpi = 300)
 
 TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
 TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
