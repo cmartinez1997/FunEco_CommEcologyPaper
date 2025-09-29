@@ -41,7 +41,9 @@ cov.24$Year<-2024
 
 
 #combine for total cover across years and treatments
+library(plyr) 
 cov.CLIFF<-rbind.fill(cov.20, cov.21, cov.22, cov.23, cov.24)
+detach("package:plyr", unload = TRUE) ##### included this because i (ian) have had issues with plyr functions conflicting with functions in other packages 
 cov.CLIFF$Year<-as.factor(cov.CLIFF$Year)
 cov.CLIFF$plot<-as.factor(cov.CLIFF$plot)
 cov.CLIFF$severity<-as.factor(cov.CLIFF$severity)
@@ -53,11 +55,13 @@ plot <- cov.CLIFF$plot
 
 traits <- read_csv("data/5Year_TraitTable.csv") %>% 
   mutate(spp = case_when(spp == "MUVI" ~ "MUST", .default = spp)) %>% 
-  arrange(spp)
-spp_pool <- traits$spp
+  arrange(spp) %>%
+  column_to_rownames(var="spp") %>% ##### ian was here #####
+  select(sla, height, seedmass, resprouting, nativity) ##### ian was here #####
+spp_pool <- rownames(traits) ##### ian was here #####
 cov.CLIFF <- cov.CLIFF[,(which(names(cov.CLIFF) %in% spp_pool))]
 cov.CLIFF <- cov.CLIFF[,order(names(cov.CLIFF))]
-# cov.CLIFF$Year <- year ; cov.CLIFF$plot <- plot
+# cov.CLIFF$Year <- year ; cov.CLIFF$plot <- plot 
 
 #Trait analysis
 # cov.traits<-read.csv(file.choose())#cover of trait species
