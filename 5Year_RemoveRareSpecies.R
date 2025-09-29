@@ -96,4 +96,4 @@ traits <- rbind.fill(traits,new.traits)
 detach("package:plyr", unload = TRUE)
 
 
-write.csv(traits,"data/5Year_TraitTable.csv")
+write.csv(traits,"data/5Year_TraitTable.csv", row.names=F)
