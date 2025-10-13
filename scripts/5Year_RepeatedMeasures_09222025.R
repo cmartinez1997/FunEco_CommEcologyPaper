@@ -58,7 +58,8 @@ traits <- read_csv("data/5Year_TraitTable.csv") %>%
   mutate(spp = case_when(spp == "MUVI" ~ "MUST", .default = spp)) %>% 
   arrange(spp) %>%
   column_to_rownames(var="spp") %>% ##### ian was here #####
-  select(sla, height, seedmass, resprouting, nativity) ##### ian was here #####
+  select(sla, height, seedmass, resprouting) %>% ##### ian was here #####
+  mutate(resprouting=resprouting+1) ##### ian was here, again. making resprouting 1-2 #####
 spp_pool <- rownames(traits) ##### ian was here #####
 cov.CLIFF <- cov.CLIFF[,(which(names(cov.CLIFF) %in% spp_pool))]
 cov.CLIFF <- cov.CLIFF[,order(names(cov.CLIFF))]
@@ -71,17 +72,19 @@ cov.CLIFF$severity <- severity
 cov.CLIFF_wisoncsin <- cov.CLIFF |> 
   select(-c(plot, Year, severity))
 cov.stand<-wisconsin(cov.CLIFF_wisoncsin)#wisconsin standardized cover
+
 # traits<-read.csv(file.choose(), header=T, row.names=1)#traits
 # traits<-log(traits[,1:3])#log transform (did we keep this in or nah?)
 
 fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
 cwm.traits<-fd.out$CWM#isolate CWM, inspect
+cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
 
-# str(cwm.traits)
-cwm.traits <- as.numeric(cwm.traits$resprouting) #make resprouting a numeric value
+str(cwm.traits)
+#cwm.traits <- as.numeric(cwm.traits$resprouting) #make resprouting a numeric value
 
 traits.dist<-vegdist(cwm.traits, method="euclidean")
-cov.CLIFF<-cbind(cov.CLIFF, cwm.traits)#bind to mega dataframe
+#cov.CLIFF<-cbind(cov.CLIFF, cwm.traits)#bind to mega dataframe...DO WE NEED THIS FOR TAX ANALYSIS
 
 str(cov.CLIFF)
 
@@ -93,10 +96,10 @@ CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat 
               nperm = 999,
               observed = TRUE)
 
-
-adonis.out<-adonis2(cwm.traits~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
-                    data=cov.CLIFF, 
-                    method="euclidean", 
+# IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
+adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                    data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+                    method="bray", # changed from euclidean to bray
                     permutations=CTRL.t,
                     by="margin")
 
@@ -104,9 +107,9 @@ adonis.out #interaction is significant, create new factor for pairwise adonis
 
 cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
 
-pairwise.out<-pairwise.adonis2(cwm.traits~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
                                data=cov.CLIFF, 
-                               method="euclidean", 
+                               method="bray", 
                                by="margin")
 pairwise.out #multiple significant pairwise comparisons with bonferonni correction
 
