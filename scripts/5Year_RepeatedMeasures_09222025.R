@@ -71,18 +71,23 @@ cov.stand<-wisconsin(cov.CLIFF)#wisconsin standardized cover
 
 fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
 cwm.traits<-fd.out$CWM#isolate CWM, inspect
-traits.dist<-vegdist(cwm.traits, method="euclidean")
 
+# str(cwm.traits)
+cwm.traits <- as.numeric(cwm.traits$resprouting) #make resprouting a numeric value
+
+traits.dist<-vegdist(cwm.traits, method="euclidean")
 cov.CLIFF<-cbind(cov.CLIFF, cwm.traits)#bind to mega dataframe
 
+str(cov.CLIFF)
 
 #This chunk of code controls how permutations are carried out and is essential
 #for the repeated mesures analysis
 CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
               plots = Plots(type = "none"),
-              blocks=cov.CLIFF$plot,
+              # blocks=cov.CLIFF$plot,
               nperm = 999,
               observed = TRUE)
+
 
 adonis.out<-adonis2(cwm.traits~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
                     data=cov.CLIFF, 
