@@ -16,7 +16,7 @@ library(glmmTMB)
 library(DHARMa)
 library(FD)
 library(devtools)
-# install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
 library(ggordiplots)
 library(data.table)
@@ -50,6 +50,7 @@ cov.CLIFF$severity<-as.factor(cov.CLIFF$severity)
 cov.CLIFF[is.na(cov.CLIFF)] <- 0 #Make NAs 0
 year <- cov.CLIFF$Year
 plot <- cov.CLIFF$plot
+severity <- cov.CLIFF$severity
 
 #read in spp that are not rare (that we have traits for)
 
@@ -61,11 +62,15 @@ traits <- read_csv("data/5Year_TraitTable.csv") %>%
 spp_pool <- rownames(traits) ##### ian was here #####
 cov.CLIFF <- cov.CLIFF[,(which(names(cov.CLIFF) %in% spp_pool))]
 cov.CLIFF <- cov.CLIFF[,order(names(cov.CLIFF))]
-# cov.CLIFF$Year <- year ; cov.CLIFF$plot <- plot 
+cov.CLIFF$Year <- year ; cov.CLIFF$plot <- plot 
+cov.CLIFF$severity <- severity
 
 #Trait analysis
 # cov.traits<-read.csv(file.choose())#cover of trait species
-cov.stand<-wisconsin(cov.CLIFF)#wisconsin standardized cover
+# trait df
+cov.CLIFF_wisoncsin <- cov.CLIFF |> 
+  select(-c(plot, Year, severity))
+cov.stand<-wisconsin(cov.CLIFF_wisoncsin)#wisconsin standardized cover
 # traits<-read.csv(file.choose(), header=T, row.names=1)#traits
 # traits<-log(traits[,1:3])#log transform (did we keep this in or nah?)
 
@@ -84,7 +89,7 @@ str(cov.CLIFF)
 #for the repeated mesures analysis
 CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
               plots = Plots(type = "none"),
-              # blocks=cov.CLIFF$plot,
+              blocks=cov.CLIFF$plot,
               nperm = 999,
               observed = TRUE)
 
@@ -94,6 +99,7 @@ adonis.out<-adonis2(cwm.traits~plot+severity*Year, #treats time as split plot fa
                     method="euclidean", 
                     permutations=CTRL.t,
                     by="margin")
+
 adonis.out #interaction is significant, create new factor for pairwise adonis
 
 cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
