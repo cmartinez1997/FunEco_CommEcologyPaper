@@ -61,6 +61,7 @@ traits <- read_csv("data/5Year_TraitTable.csv") %>%
   column_to_rownames(var="spp") %>% ##### ian was here #####
   select(sla, height, seedmass, resprouting) %>% ##### ian was here #####
   mutate(resprouting=resprouting+1) ##### ian was here, again. making resprouting 1-2 #####
+
 spp_pool <- rownames(traits) ##### ian was here #####
 cov.CLIFF <- cov.CLIFF[,(which(names(cov.CLIFF) %in% spp_pool))]
 cov.CLIFF <- cov.CLIFF[,order(names(cov.CLIFF))]
@@ -79,23 +80,42 @@ cwm.traits<-fd.out$CWM#isolate CWM, inspect
 cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
 
 nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
-env_5yr <- envfit(nmds_5yr, cwm.traits)$vectors$arrows
+
+env_5yr <- data.frame(envfit(nmds_5yr, cwm.traits)$vectors$arrows, 
+                 traits = c("sla", "height", "seedmass", "resprouting"))
+
+
+env_5yr_0 <- data.frame(NMDS1 = c(0, 0, 0, 0), NMDS2 = c(0, 0, 0, 0), 
+                      traits = c("sla", "height", "seedmass", "resprouting"))
+env_lines <- rbind(env_5yr, env_5yr_0)
 
 data_nmds <- as_tibble(scores(nmds_5yr, display="sites"))
 
 plot_data <- select(cov.CLIFF, Year, severity)
 tax_scores <- cbind(data_nmds, plot_data)
+
 tax_means <- tax_scores %>% 
   group_by(Year, severity) %>% 
   summarise(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2))
 
+severity_colors_points <- c("U" = "#5bbcd695", "L" = "#f9840295", "H" = "#fb040495")
+severity_colors_centroids <- c("U" = "#5bbcd6", "L" = "#f98402", "H" = "#fb0404")
+severity_symbols <- c("Unburned" = 15, "Low" = 16, "High" = 17)
+severity_lty <- c("Unburned" = 1, "Low" = 2, "High" = 3)
+
 ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
-  geom_line(data = env_5yr, display = "vectors")+
-  geom_point(aes(color = severity), size = 2, data = tax_means)+
   geom_point(aes(color = severity), size = 1, data = tax_scores, alpha = 0.5)+
-  stat_ellipse(aes(color = severity), data = tax_scores)+
-  facet_wrap(~Year)+
-  theme_light()
+  scale_color_manual(values = severity_colors_points)+
+  ggnewscale::new_scale_color()+
+  geom_point(aes(color = severity), size = 2, data = tax_means)+
+  scale_color_manual(values = severity_colors_centroids)+
+  stat_ellipse(aes(color = severity, linetype = severity), data = tax_scores)+
+  geom_line(data = env_lines, aes(group = traits))+
+  geom_label(data = env_5yr, aes(label = traits))+
+  facet_wrap(~Year, ncol = 1)+
+  theme_bw()
+
+# adjust centroids
 
 #wisconsin standardized cover
 
