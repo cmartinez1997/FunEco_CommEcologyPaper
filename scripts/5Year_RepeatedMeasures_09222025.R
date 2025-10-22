@@ -48,6 +48,7 @@ cov.CLIFF$Year<-as.factor(cov.CLIFF$Year)
 cov.CLIFF$plot<-as.factor(cov.CLIFF$plot)
 cov.CLIFF$severity<-as.factor(cov.CLIFF$severity)
 cov.CLIFF[is.na(cov.CLIFF)] <- 0 #Make NAs 0
+
 year <- cov.CLIFF$Year
 plot <- cov.CLIFF$plot
 severity <- cov.CLIFF$severity
@@ -71,7 +72,26 @@ cov.CLIFF$severity <- severity
 # trait df
 cov.CLIFF_wisoncsin <- cov.CLIFF |> 
   select(-c(plot, Year, severity))
-cov.stand<-wisconsin(cov.CLIFF_wisoncsin)#wisconsin standardized cover
+cov.stand<-wisconsin(cov.CLIFF_wisoncsin)
+
+nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
+
+data_nmds <- as_tibble(scores(nmds_5yr, display="sites"))
+
+plot_data <- select(cov.CLIFF, Year, severity)
+tax_scores <- cbind(data_nmds, plot_data)
+tax_means <- tax_scores %>% 
+  group_by(Year, severity) %>% 
+  summarise(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2))
+
+ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
+  geom_point(aes(color = severity), size = 2, data = tax_means)+
+  geom_point(aes(color = severity), size = 1, data = tax_scores, alpha = 0.5)+
+  stat_ellipse(aes(color = severity), data = tax_scores)+
+  facet_wrap(~Year)+
+  theme_light()
+
+#wisconsin standardized cover
 
 # traits<-read.csv(file.choose(), header=T, row.names=1)#traits
 # traits<-log(traits[,1:3])#log transform (did we keep this in or nah?)
