@@ -74,7 +74,12 @@ cov.CLIFF_wisoncsin <- cov.CLIFF |>
   select(-c(plot, Year, severity))
 cov.stand<-wisconsin(cov.CLIFF_wisoncsin)
 
+fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
+cwm.traits<-fd.out$CWM#isolate CWM, inspect
+cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
+
 nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
+env_5yr <- envfit(nmds_5yr, cwm.traits)$vectors$arrows
 
 data_nmds <- as_tibble(scores(nmds_5yr, display="sites"))
 
@@ -85,6 +90,7 @@ tax_means <- tax_scores %>%
   summarise(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2))
 
 ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
+  geom_line(data = env_5yr, display = "vectors")+
   geom_point(aes(color = severity), size = 2, data = tax_means)+
   geom_point(aes(color = severity), size = 1, data = tax_scores, alpha = 0.5)+
   stat_ellipse(aes(color = severity), data = tax_scores)+
@@ -96,9 +102,6 @@ ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
 # traits<-read.csv(file.choose(), header=T, row.names=1)#traits
 # traits<-log(traits[,1:3])#log transform (did we keep this in or nah?)
 
-fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
-cwm.traits<-fd.out$CWM#isolate CWM, inspect
-cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
 
 str(cwm.traits)
 #cwm.traits <- as.numeric(cwm.traits$resprouting) #make resprouting a numeric value
