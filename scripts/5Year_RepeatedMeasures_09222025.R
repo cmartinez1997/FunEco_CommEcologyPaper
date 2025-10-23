@@ -80,6 +80,7 @@ cwm.traits<-fd.out$CWM#isolate CWM, inspect
 cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
 
 nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
+nmds_5yr$stress
 
 env_5yr <- data.frame(envfit(nmds_5yr, cwm.traits)$vectors$arrows, 
                  traits = c("sla", "height", "seedmass", "resprouting"))
@@ -100,20 +101,32 @@ tax_means <- tax_scores %>%
 
 severity_colors_points <- c("U" = "#5bbcd695", "L" = "#f9840295", "H" = "#fb040495")
 severity_colors_centroids <- c("U" = "#5bbcd6", "L" = "#f98402", "H" = "#fb0404")
-severity_symbols <- c("Unburned" = 15, "Low" = 16, "High" = 17)
-severity_lty <- c("Unburned" = 1, "Low" = 2, "High" = 3)
+# severity_symbols <- c("Unburned" = 15, "Low" = 16, "High" = 17)
+# severity_lty <- c("Unburned" = 1, "Low" = 2, "High" = 3)
 
 ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
-  geom_point(aes(color = severity), size = 1, data = tax_scores, alpha = 0.5)+
+  geom_point(aes(color = severity), data = tax_scores, alpha = 0.5)+
   scale_color_manual(values = severity_colors_points)+
-  ggnewscale::new_scale_color()+
-  geom_point(aes(color = severity), size = 2, data = tax_means)+
-  scale_color_manual(values = severity_colors_centroids)+
-  stat_ellipse(aes(color = severity, linetype = severity), data = tax_scores)+
+  scale_fill_manual(values = severity_colors_points)+
+  geom_point(aes(fill = severity), size = 3, alpha = 1,
+             data = tax_means, pch = 21)+
+  stat_ellipse(aes(color = severity, linetype = severity), data = tax_scores,
+               linewidth = 1)+
   geom_line(data = env_lines, aes(group = traits))+
-  geom_label(data = env_5yr, aes(label = traits))+
   facet_wrap(~Year, ncol = 1)+
-  theme_bw()
+  theme_minimal(base_size = 20)
+ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in")
+
+
+
+
+
+
+
+
+
+
+
 
 # adjust centroids
 
