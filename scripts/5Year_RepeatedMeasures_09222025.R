@@ -71,9 +71,21 @@ cov.CLIFF$severity <- severity
 #Trait analysis
 # cov.traits<-read.csv(file.choose())#cover of trait species
 # trait df
-cov.CLIFF_wisoncsin <- cov.CLIFF |> 
-  select(-c(plot, Year, severity))
-cov.stand<-wisconsin(cov.CLIFF_wisoncsin)
+# cov.CLIFF_wisoncsin <- cov.CLIFF |> 
+#   select(-c(plot, Year, severity))
+# cov.stand<-wisconsin(cov.CLIFF_wisoncsin)
+
+# For loop that relativizes cover across severities WITHIN YEARS
+year <- c(2020, 2021, 2022, 2023, 2024)
+cov.stand <- NULL
+for(i in year){
+  cov.CLIFF_wisoncsin <- cov.CLIFF %>%
+    filter(Year==i)
+  wisconsin <- cov.CLIFF_wisoncsin %>%
+    select(-c(plot, Year, severity)) %>%
+    wisconsin()
+  cov.stand<-rbind(cov.stand, wisconsin)
+}
 
 fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
 cwm.traits<-fd.out$CWM#isolate CWM, inspect
