@@ -87,6 +87,36 @@ for(i in year){
   cov.stand<-rbind(cov.stand, wisconsin)
 }
 
+# REPEATED MEASURES PERMANOVA ##################################################
+
+#This chunk of code controls how permutations are carried out and is essential
+#for the repeated mesures analysis
+CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
+              plots = Plots(type = "none"),
+              blocks=cov.CLIFF$plot,
+              nperm = 999,
+              observed = TRUE)
+
+# IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
+adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                    data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+                    method="bray", # changed from euclidean to bray
+                    permutations=CTRL.t,
+                    by="margin")
+
+adonis.out #interaction is significant, create new factor for pairwise adonis
+
+cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
+
+pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                               data=cov.CLIFF,
+                               method="bray",
+                               by="margin")
+pairwise.out #multiple significant pairwise comparisons with bonferonni correction
+
+################################################################################
+
+
 fd.out<-dbFD(traits, cov.stand)#run dbFD to get CWM
 cwm.traits<-fd.out$CWM#isolate CWM, inspect
 cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to make it binary
@@ -156,31 +186,31 @@ ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in")
 # 
 # str(cov.CLIFF)
 # 
-# #This chunk of code controls how permutations are carried out and is essential
-# #for the repeated mesures analysis
-# CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
-#               plots = Plots(type = "none"),
-#               blocks=cov.CLIFF$plot,
-#               nperm = 999,
-#               observed = TRUE)
-# 
-# # IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
-# adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
-#                     data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
-#                     method="bray", # changed from euclidean to bray
-#                     permutations=CTRL.t,
-#                     by="margin")
-# 
-# adonis.out #interaction is significant, create new factor for pairwise adonis
-# 
-# cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
-# 
-# pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
-#                                data=cov.CLIFF, 
-#                                method="bray", 
-#                                by="margin")
-# pairwise.out #multiple significant pairwise comparisons with bonferonni correction
-# 
+#This chunk of code controls how permutations are carried out and is essential
+#for the repeated mesures analysis
+CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
+              plots = Plots(type = "none"),
+              blocks=cov.CLIFF$plot,
+              nperm = 999,
+              observed = TRUE)
+
+# IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
+adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                    data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+                    method="bray", # changed from euclidean to bray
+                    permutations=CTRL.t,
+                    by="margin")
+
+adonis.out #interaction is significant, create new factor for pairwise adonis
+
+cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
+
+pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                               data=cov.CLIFF,
+                               method="bray",
+                               by="margin")
+pairwise.out #multiple significant pairwise comparisons with bonferonni correction
+
 # #Plot MDS of traits
 # #extract points and centroids for each severity/year combo
 # traits.mds<-metaMDS(traits.dist, weakties=F)
