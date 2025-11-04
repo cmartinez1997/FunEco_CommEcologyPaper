@@ -124,6 +124,9 @@ cwm.traits$resprouting<-cwm.traits$resprouting-1#subtract 1 from resprouting to 
 nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
 nmds_5yr$stress
 
+(envfit_results <- envfit(nmds_5yr, cwm.traits))
+# envfit_results
+
 env_5yr <- data.frame(envfit(nmds_5yr, cwm.traits)$vectors$arrows, 
                  traits = c("sla", "height", "seedmass", "resprouting"))
 
@@ -155,9 +158,11 @@ ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
   stat_ellipse(aes(color = severity, linetype = severity), data = tax_scores,
                linewidth = 1)+
   geom_line(data = env_lines, aes(group = traits))+
+  geom_label(data = env_5yr, aes(label = traits))+ # use this to figure out which env line is which
   facet_wrap(~Year, ncol = 1)+
-  theme_minimal(base_size = 20)
-ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in")
+  theme_minimal(base_size = 20)+
+  labs(fill = "Severity", color = "Severity", linetype = "Severity")
+# ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in", dpi = 600)
 
 
 
