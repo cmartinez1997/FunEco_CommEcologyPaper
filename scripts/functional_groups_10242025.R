@@ -135,19 +135,14 @@ ggplot(cover_df, aes(x = year, y = cov*100))+
            position = position_dodge())+
   geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100, group = severity),
                 position = position_dodge())+
-  # scale_y_continuous(breaks = c(25, 50, 75, 100),
-  #                    labels = c("25", "50", "75", "100"),
-  #                    limits = c(0, 110))+
-  labs(x = "Year", y = "Relative Cover (%)",
-       fill = "Functional type")+
+  labs(x = "Year", y = "Relative cover (%)",
+       fill = "Severity")+
   scale_fill_manual(values = severity_colors)+
-  facet_wrap(~group, nrow = 4, scales = "free")+
+  facet_wrap(~group, nrow = 4)+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
-  theme(strip.text = element_text(colour = 'black'))+
-  theme(legend.position = "none")
-
-# ggsave("outputs/functional_group_cover_facet.png", last_plot(),
-#        width = 8, height = 8, units = "in", dpi = 300)
+  theme(strip.text = element_text(colour = 'black'))
+ggsave("outputs/5yr_fun_cover.png", last_plot(),
+       width = 5, height = 12, units = "in", dpi = 600)
 
 # functional group stats:
 
@@ -187,16 +182,14 @@ ggplot(type_df, aes(x = year, y = cov*100))+
            position = position_dodge())+
   geom_errorbar(aes(ymax = (cov*100 + cov_sd*100), ymin = cov*100, group = severity),
                 position = position_dodge())+
-  # scale_y_continuous(breaks = c(25, 50, 75, 100),
-  #                    labels = c("25", "50", "75", "100"),
-  #                    limits = c(0, 110))+
-  labs(x = "Year", y = "Relative Cover (%)",
-       fill = "Functional type")+
+  labs(x = "Year", y = "Relative cover (%)",
+       fill = "Severity")+
   scale_fill_manual(values = severity_colors)+
-  facet_wrap(~group, nrow = 4, scales = "free")+
+  facet_wrap(~group, nrow = 4)+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
-  theme(strip.text = element_text(colour = 'black'))+
-  theme(legend.position = "none")
+  theme(strip.text = element_text(colour = 'black'))
+ggsave("outputs/5yr_exo_cover.png", last_plot(),
+       width = 5, height = 12, units = "in", dpi = 600)
 # ggsave("outputs/nativity_cover_facet.png", last_plot(),
 #        width = 8, height = 4, units = "in", dpi = 300)
 # scale_fill_manual(values = c("#ae94a3", "#4d795f"))+
