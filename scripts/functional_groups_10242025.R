@@ -189,12 +189,10 @@ ggplot(type_df, aes(x = year, y = cov*100))+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))
 ggsave("outputs/5yr_exo_cover.png", last_plot(),
-       width = 5, height = 12, units = "in", dpi = 600)
-# ggsave("outputs/nativity_cover_facet.png", last_plot(),
-#        width = 8, height = 4, units = "in", dpi = 300)
-# scale_fill_manual(values = c("#ae94a3", "#4d795f"))+
+       width = 5, height = 7, units = "in", dpi = 600)
 
-TukeyHSD(aov(Native ~ severity, data = rel_nat_cover)) # native
+
+TukeyHSD(aov(Native ~ severity*year, data = rel_nat_cover)) # native
 TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
 
 
