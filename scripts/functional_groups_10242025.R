@@ -138,10 +138,10 @@ ggplot(cover_df, aes(x = year, y = cov*100))+
   labs(x = "Year", y = "Relative cover (%)",
        fill = "Severity")+
   scale_fill_manual(values = severity_colors)+
-  facet_wrap(~group, nrow = 4)+
+  facet_wrap(~group, nrow = 4, scales = "free")+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))
-ggsave("outputs/5yr_fun_cover.png", last_plot(),
+ggsave("outputs/5yr_fun_cover_free.png", last_plot(),
        width = 5, height = 12, units = "in", dpi = 600)
 
 # functional group stats:

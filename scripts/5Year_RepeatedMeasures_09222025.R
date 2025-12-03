@@ -125,7 +125,7 @@ nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
 nmds_5yr$stress
 
 (envfit_results <- envfit(nmds_5yr, cwm.traits))
-# envfit_results
+envfit_results
 
 env_5yr <- data.frame(envfit(nmds_5yr, cwm.traits)$vectors$arrows, 
                  traits = c("sla", "height", "seedmass", "resprouting"))
