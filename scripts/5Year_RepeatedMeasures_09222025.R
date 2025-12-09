@@ -20,6 +20,7 @@ install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
 library(ggordiplots)
 library(data.table)
+library(spdep)
 
 # fern working on this
 
@@ -87,32 +88,32 @@ for(i in year){
   cov.stand<-rbind(cov.stand, wisconsin)
 }
 
-# REPEATED MEASURES PERMANOVA ##################################################
-
-#This chunk of code controls how permutations are carried out and is essential
-#for the repeated mesures analysis
-CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
-              plots = Plots(type = "none"),
-              blocks=cov.CLIFF$plot,
-              nperm = 999,
-              observed = TRUE)
-
-# IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
-adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
-                    data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
-                    method="bray", # changed from euclidean to bray
-                    permutations=CTRL.t,
-                    by="margin")
-
-adonis.out #interaction is significant, create new factor for pairwise adonis
-
-cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
-
-pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
-                               data=cov.CLIFF,
-                               method="bray",
-                               by="margin")
-pairwise.out #multiple significant pairwise comparisons with bonferonni correction
+# # REPEATED MEASURES PERMANOVA ##################################################
+# 
+# #This chunk of code controls how permutations are carried out and is essential
+# #for the repeated mesures analysis
+# CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
+#               plots = Plots(type = "none"),
+#               blocks=cov.CLIFF$plot,
+#               nperm = 999,
+#               observed = TRUE)
+# 
+# # IMPORTANT #### As of 10/13, this was coded using cwm, but we took out the trait permanova, so i (ian) am switching it taxonomic
+# adonis.out<-adonis2(cov.stand~plot+severity*Year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+#                     data=cov.CLIFF, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+#                     method="bray", # changed from euclidean to bray
+#                     permutations=CTRL.t,
+#                     by="margin")
+# 
+# adonis.out #interaction is significant, create new factor for pairwise adonis
+# 
+# cov.CLIFF$sev.year<-paste(cov.CLIFF$severity,cov.CLIFF$Year)
+# 
+# pairwise.out<-pairwise.adonis2(cov.stand~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+#                                data=cov.CLIFF,
+#                                method="bray",
+#                                by="margin")
+# pairwise.out #multiple significant pairwise comparisons with bonferonni correction
 
 ################################################################################
 
@@ -125,7 +126,7 @@ nmds_5yr <- metaMDS(cov.stand, distance="bray", k=2, trymax=100)
 nmds_5yr$stress
 
 (envfit_results <- envfit(nmds_5yr, cwm.traits))
-envfit_results
+# envfit_results
 
 env_5yr <- data.frame(envfit(nmds_5yr, cwm.traits)$vectors$arrows, 
                  traits = c("sla", "height", "seedmass", "resprouting"))
@@ -143,6 +144,11 @@ tax_scores <- cbind(data_nmds, plot_data)
 tax_means <- tax_scores %>% 
   group_by(Year, severity) %>% 
   summarise(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2))
+
+
+
+
+
 
 severity_colors_points <- c("U" = "#5bbcd695", "L" = "#f9840295", "H" = "#fb040495")
 severity_colors_centroids <- c("U" = "#5bbcd6", "L" = "#f98402", "H" = "#fb0404")
@@ -163,6 +169,23 @@ ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
   theme_minimal(base_size = 20)+
   labs(fill = "Severity", color = "Severity", linetype = "Severity")
 # ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in", dpi = 600)
+
+# CHECKING for autocorrelation:
+
+# plot neighbors (need a shapefile)
+
+library(sf)
+
+plot_loc <- st_read("data/MuseumFirePlots.shp")
+plot_loc <- select(plot_loc, title, geometry)
+
+#
+tax2020 <- filter(tax_means, Year == 2020)
+tax2020 <- cbind(tax2020, plot_loc)
+
+
+
+
 
 
 
