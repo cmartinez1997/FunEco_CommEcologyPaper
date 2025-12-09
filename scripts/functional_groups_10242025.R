@@ -245,8 +245,16 @@ ggplot(type_df, aes(x = year, y = cov*100))+
 #        width = 5, height = 7, units = "in", dpi = 600)
 
 
-# TukeyHSD(aov(Native ~ severity*year, data = rel_nat_cover)) # native
-# TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+# get these pairwise comparisons done
+# extract p values
+# do bonferroni correction
+# then add letters
+
+TukeyHSD(aov(Native ~ year:severity, data = rel_nat_cover)) # native
+TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+
+TukeyHSD(aov(Graminoid ~ severity*year, data = rel_fun_cover)) # native
+TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
 
 # 
 # 
