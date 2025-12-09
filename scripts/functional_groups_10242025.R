@@ -66,12 +66,14 @@ for(i in year){
     decostand(method = "total")
   cov.stand<-rbind(cov.stand, deco)
 }
+
+
 # Stats: PermANOVA
 
 traits <- traits %>% 
   mutate(spp = rownames(.)) %>% 
   mutate(gram = case_when(spp %in% c("CARO", "ELEL", "FEAR",
-                                     "MUMO", "MUVI", "PIPR", 
+                                     "MUMO", "MUST", "PIPR", 
                                      "SCSC") ~ 2, .default = 1),
          shrub = case_when(spp == "CEFE" ~ 2, .default = 1),
          tree = case_when(spp == "QUGA" ~ 2, .default = 1),
@@ -89,7 +91,7 @@ traits_type <- traits %>%
 
 # Figures:
 cov.stand$year <- cov.CLIFF$Year
-cov.stand$severity <- severity
+cov.stand$severity <- cov.CLIFF$severity
 cov.stand$plot <- cov.CLIFF$plot
 
 group_cover <- cov.stand %>% 
@@ -118,6 +120,32 @@ rel_fun_cover <- fun_cover %>%
 
 rel_fun_cover$severity <- fun_cover$severity
 rel_fun_cover$year <- fun_cover$year
+rel_fun_cover$plot <- fun_cover$plot
+
+CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
+              plots = Plots(type = "none"),
+              blocks=fun_cover$plot,
+              nperm = 999,
+              observed = TRUE)
+
+fun <- select(rel_fun_cover, Forb, Tree, Shrub, Graminoid)
+
+adonis.out<-adonis2(fun~plot+severity*year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                    data = rel_fun_cover, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+                    method = "bray", # changed from euclidean to bray
+                    permutations = CTRL.t,
+                    by = "margin")
+
+adonis.out #interaction is significant, create new factor for pairwise adonis :)
+
+rel_fun_cover$sev.year<-paste(rel_fun_cover$severity,rel_fun_cover$year)
+
+pairwise.out<-pairwise.adonis2(fun~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                               data=rel_fun_cover,
+                               method="bray",
+                               by="margin")
+pairwise.out #multiple significant pairwise comparisons with bonferonni (?) correction
+
 
 cover_df <- rel_fun_cover %>% 
   pivot_longer(cols = Forb:Tree, names_to = "group") %>% 
@@ -138,18 +166,18 @@ ggplot(cover_df, aes(x = year, y = cov*100))+
   labs(x = "Year", y = "Relative cover (%)",
        fill = "Severity")+
   scale_fill_manual(values = severity_colors)+
-  facet_wrap(~group, nrow = 4, scales = "free")+
+  facet_wrap(~group, nrow = 4)+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))
-ggsave("outputs/5yr_fun_cover_free.png", last_plot(),
-       width = 5, height = 12, units = "in", dpi = 600)
+# ggsave("outputs/5yr_fun_cover.png", last_plot(),
+#        width = 5, height = 12, units = "in", dpi = 600)
 
 # functional group stats:
-
-TukeyHSD(aov(Forb ~ severity, data = rel_fun_cover)) # forbs
-TukeyHSD(aov(Shrub ~ severity, data = rel_fun_cover)) # shrubs
-TukeyHSD(aov(Graminoid ~ severity, data = rel_fun_cover)) # grammies
-TukeyHSD(aov(Tree ~ severity, data = rel_fun_cover)) # trees
+# 
+# TukeyHSD(aov(Forb ~ severity, data = rel_fun_cover)) # forbs
+# TukeyHSD(aov(Shrub ~ severity, data = rel_fun_cover)) # shrubs
+# TukeyHSD(aov(Graminoid ~ severity, data = rel_fun_cover)) # grammies
+# TukeyHSD(aov(Tree ~ severity, data = rel_fun_cover)) # trees
 
 
 # Nativity:
@@ -167,12 +195,37 @@ rel_nat_cover <- nat_cover %>%
 
 rel_nat_cover$severity <- nat_cover$severity
 rel_nat_cover$year <- nat_cover$year
+rel_nat_cover$plot <- nat_cover$plot
 
 type_df <- rel_nat_cover %>% 
   pivot_longer(cols = Exotic:Native, names_to = "group") %>% 
   group_by(severity, group, year) %>% 
   summarise(cov = mean(value), cov_sd = sd(value))
 type_df$severity <- factor(type_df$severity, c("U", "L", "H"))
+
+CTRL.t <- how(within = Within(type = "free"), #restrict permutations for repeat measures
+              plots = Plots(type = "none"),
+              blocks=nat_cover$plot,
+              nperm = 999,
+              observed = TRUE)
+
+nat <- select(rel_nat_cover, Exotic, Native)
+
+adonis.out<-adonis2(nat~plot+severity*year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                    data = rel_nat_cover, # CAN SOMEONE CONFIRM THAT THIS IS CORRECT?
+                    method = "bray", # changed from euclidean to bray
+                    permutations = CTRL.t,
+                    by = "margin")
+
+adonis.out #interaction is significant, create new factor for pairwise adonis :)
+
+rel_nat_cover$sev.year<-paste(rel_nat_cover$severity,rel_nat_cover$year)
+
+pairwise.out<-pairwise.adonis2(nat~sev.year, #treats time as split plot factor, plot as sample unit per Bakker 2024
+                               data=rel_nat_cover,
+                               method="bray",
+                               by="margin")
+pairwise.out
 
 ggplot(type_df, aes(x = year, y = cov*100))+
   theme_light(base_size = 18)+
@@ -188,44 +241,38 @@ ggplot(type_df, aes(x = year, y = cov*100))+
   facet_wrap(~group, nrow = 4)+
   theme(strip.background = element_rect(color = "black", fill = "white"))+
   theme(strip.text = element_text(colour = 'black'))
-ggsave("outputs/5yr_exo_cover.png", last_plot(),
-       width = 5, height = 7, units = "in", dpi = 600)
+# ggsave("outputs/5yr_exo_cover.png", last_plot(),
+#        width = 5, height = 7, units = "in", dpi = 600)
 
 
-TukeyHSD(aov(Native ~ severity*year, data = rel_nat_cover)) # native
-TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
+# TukeyHSD(aov(Native ~ severity*year, data = rel_nat_cover)) # native
+# TukeyHSD(aov(Exotic ~ severity, data = rel_nat_cover)) # exotic
 
-
-
-
-
-# for permanovas:?
-cwm_exo <- dbFD(traits_exo, cov.stand)$CWM
-cwm_type <- dbFD(traits_type, cov.stand)$CWM
-
-
-# exotics permanova
-# but i gotta figure out how to make this go within years and what not
-perm_exo <- adonis2(vegdist(cwm_exo, method="euclidean") ~ severity, permutations=9999)
-pair_exo <- pairwise.adonis(vegdist(cwm_exo, method="euclidean"), severity, perm=9999)
-perm_exo
-pair_exo
-
-# Test of beta dispersion and post-hoc pairwise test of beta dispersion
-anova(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
-TukeyHSD(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
-
-# functional group permanova
-perm_type <- adonis2(vegdist(cwm_type, method="euclidean") ~ data$Severity, permutations=9999)
-pair_type <- pairwise.adonis(vegdist(cwm_type, method="euclidean"), data$Severity, perm=9999)
-perm_type
-pair_type
-
-# Test of beta dispersion and post-hoc pairwise test of beta dispersion
-anova(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
-TukeyHSD(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
-
-# cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
-# cow
-# ggsave("outputs/cover_plot.png", last_plot(),
-#        width = 8.5, height = 6, units = "in", dpi = 300)
+# 
+# 
+# 
+# # exotics permanova
+# # but i gotta figure out how to make this go within years and what not
+# perm_exo <- adonis2(vegdist(cwm_exo, method="euclidean") ~ severity, permutations=9999)
+# pair_exo <- pairwise.adonis(vegdist(cwm_exo, method="euclidean"), severity, perm=9999)
+# perm_exo
+# pair_exo
+# 
+# # Test of beta dispersion and post-hoc pairwise test of beta dispersion
+# anova(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
+# TukeyHSD(betadisper(vegdist(cwm_exo, method="euclidean"), data$Severity, type="centroid"))
+# 
+# # functional group permanova
+# perm_type <- adonis2(vegdist(cwm_type, method="euclidean") ~ data$Severity, permutations=9999)
+# pair_type <- pairwise.adonis(vegdist(cwm_type, method="euclidean"), data$Severity, perm=9999)
+# perm_type
+# pair_type
+# 
+# # Test of beta dispersion and post-hoc pairwise test of beta dispersion
+# anova(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
+# TukeyHSD(betadisper(vegdist(cwm_type, method="euclidean"), data$Severity, type="centroid"))
+# 
+# # cow <- plot_grid(a,b, ncol=1, align = "v", axis="1")
+# # cow
+# # ggsave("outputs/cover_plot.png", last_plot(),
+# #        width = 8.5, height = 6, units = "in", dpi = 300)
