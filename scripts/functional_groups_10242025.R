@@ -25,7 +25,8 @@ cov.24$Year<-2024
 
 #combine for total cover across years and treatments
 library(plyr) 
-cov.CLIFF<-rbind.fill(cov.20, cov.21, cov.22, cov.23, cov.24)
+cov.CLIFF<-rbind.fill(cov.20, cov.21, cov.22, cov.23, cov.24) %>%
+  mutate(severity=factor(severity, levels=c("U","L","H")))
 detach("package:plyr", unload = TRUE) ##### included this because i (ian) have had issues with plyr functions conflicting with functions in other packages 
 cov.CLIFF$Year<-as.factor(cov.CLIFF$Year)
 cov.CLIFF$plot<-as.factor(cov.CLIFF$plot)
