@@ -147,7 +147,7 @@ pairwise.out<-pairwise.adonis2(fun~sev.year, #treats time as split plot factor, 
                                by="margin")
 pairwise.out #multiple significant pairwise comparisons with bonferonni (?) correction
 
-write.csv(pairwise.out, "funPERMresults.csv", row.names = F)
+#write.csv(pairwise.out, "funPERMresults.csv", row.names = F)
 
 cover_df <- rel_fun_cover %>% 
   pivot_longer(cols = Forb:Tree, names_to = "group") %>% 
@@ -228,6 +228,8 @@ pairwise.out<-pairwise.adonis2(nat~sev.year, #treats time as split plot factor, 
                                method="bray",
                                by="margin")
 pairwise.out
+
+#write.csv(pairwise.out, "natPERMresults.csv", row.names = F)
 
 ggplot(type_df, aes(x = year, y = cov*100))+
   theme_light(base_size = 18)+
