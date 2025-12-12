@@ -146,6 +146,7 @@ pairwise.out<-pairwise.adonis2(fun~sev.year, #treats time as split plot factor, 
                                by="margin")
 pairwise.out #multiple significant pairwise comparisons with bonferonni (?) correction
 
+write.csv(pairwise.out, "funPERMresults.csv", row.names = F)
 
 cover_df <- rel_fun_cover %>% 
   pivot_longer(cols = Forb:Tree, names_to = "group") %>% 
