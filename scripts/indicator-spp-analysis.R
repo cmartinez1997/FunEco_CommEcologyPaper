@@ -21,8 +21,10 @@ cov.22 <- read.csv("data/CoverSep2022.csv")
 cov.21 <- read.csv("data/CoverSep2021.csv")
 cov.20 <- read.csv("data/CoverSep2020.csv")
 
-
+?multipatt
 # reorganize data for pakige
+# originally i changed it to abundance but i changed it back to cover
+# but im too lazy to change the name
 abund.24 <- cov.24[,3:ncol(cov.24)]
 abund.24[is.na(abund.24)] <- 0
 severity.24 <- cov.24$severity
@@ -45,35 +47,35 @@ severity.20 <- cov.20$severity
 
 # analyze 
 indicspp.24 <- multipatt(abund.24, severity.24, 
-                      func = "r.g", 
+                      func = "IndVal.g", 
                       restcomb = c(1,2,3),
                       control = how(nperm=9999))
 summary(indicspp.24, alpha = 0.1)
 
 
 indicspp.23 <- multipatt(abund.23, severity.23, 
-                         func = "r.g", 
+                         func = "IndVal.g", 
                          restcomb = c(1,2,3),
                          control = how(nperm=9999))
 summary(indicspp.23, alpha = 0.1)
 
 
 indicspp.22 <- multipatt(abund.22, severity.22, 
-                         func = "r.g", 
+                         func = "IndVal.g", 
                          restcomb = c(1,2,3),
                          control = how(nperm=9999))
 summary(indicspp.22, alpha = 0.1)
 
 
 indicspp.21 <- multipatt(abund.21, severity.21, 
-                         func = "r.g", 
+                         func = "IndVal.g", 
                          restcomb = c(1,2,3),
                          control = how(nperm=9999))
 summary(indicspp.21, alpha = 0.1)
 
 
 indicspp.20 <- multipatt(abund.20, severity.20, 
-                         func = "r.g", 
+                         func = "IndVal.g", 
                          restcomb = c(1,2,3),
                          control = how(nperm=9999))
 summary(indicspp.20, alpha = 0.1)
@@ -99,9 +101,9 @@ ind_cov_means.24 <- ind_rel_cov.24 %>%
 ind_cov.24 <- right_join(ind_cov_means.24, ind.24)
 
 #2023
-ind_spp.23 <- c("SCSC", "MUST", "LIMU", "BADI", "COCA",
+ind_spp.23 <- c("SCSC", "PIPR", "MUST", "LIMU", "BADI", "COCA",
                 "VETH", "LASE", "SATR", "LIDA", "CHAL", "LOWR")
-ind_sev.23 <- c("U", "L", "L", "L", "H", "H", "H", "H", "H", "H", "H")
+ind_sev.23 <- c("U", "U", "L", "L", "L", "H", "H", "H", "H", "H", "H", "H")
 ind.23 <- data.frame(ind_spp.23, ind_sev.23)
 names(ind.23) <- c("spp", "severity")
 
