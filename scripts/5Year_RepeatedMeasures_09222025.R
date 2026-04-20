@@ -56,7 +56,7 @@ severity <- cov.CLIFF$severity
 
 #read in spp that are not rare (that we have traits for)
 
-traits <- read_csv("data/5Year_TraitTable.csv") %>% 
+traits <- read_csv("data/TraitTable.csv") %>% 
   mutate(spp = case_when(spp == "MUVI" ~ "MUST", .default = spp)) %>% 
   arrange(spp) %>%
   column_to_rownames(var="spp") %>% ##### ian was here #####
@@ -172,7 +172,7 @@ ggplot(tax_scores, aes(x = NMDS1, y = NMDS2))+
   facet_wrap(~Year, ncol = 1)+
   theme_minimal(base_size = 20)+
   labs(fill = "Severity", color = "Severity", linetype = "Severity")
-# ggsave("outputs/5yrNMDS.png", width = 7, height = 20, units = "in", dpi = 600)
+ ggsave("outputs/5yrNMDS.png", width = 8, height = 20, units = "in", dpi = 600)
 
 # CHECKING for autocorrelation:
 
